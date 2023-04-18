@@ -1,0 +1,30 @@
+Node 1: 107.21.224.146 = 172.31.91.33
+Node 2: 44.194.10.251 = 172.31.90.192
+Node 3: 54.226.206.250 = 172.31.92.24
+
+First stage:
+
+ssh -i nn.pem ubuntu@107.21.224.146
+yes
+mongod --port 27019 --bind_ip 172.31.91.33 --dbpath ./db/config/data --configsvr --replSet cfg --logpath ./db/config/mongod.log --fork
+mongod --shardsvr --replSet s0 --dbpath ./db/data/s0 --port 27020 --fork --logpath ./db/data/s0/s.log --bind_ip 172.31.91.33
+mongod --shardsvr --replSet s1 --dbpath ./db/data/s1 --port 27021 --fork --logpath ./db/data/s1/s.log --bind_ip 172.31.91.33
+mongod --shardsvr --replSet s2 --dbpath ./db/data/s2 --port 27022 --fork --logpath ./db/data/s2/s.log --bind_ip 172.31.91.33
+
+ssh -i nn.pem ubuntu@44.194.10.251
+yes
+mongod --port 27019 --bind_ip 172.31.90.192 --dbpath ./db/config/data --configsvr --replSet cfg --logpath ./db/config/mongod.log --fork
+mongod --shardsvr --replSet s0 --dbpath ./db/data/s0 --port 27020 --fork --logpath ./db/data/s0/s.log --bind_ip 172.31.90.192
+mongod --shardsvr --replSet s1 --dbpath ./db/data/s1 --port 27021 --fork --logpath ./db/data/s1/s.log --bind_ip 172.31.90.192
+mongod --shardsvr --replSet s2 --dbpath ./db/data/s2 --port 27022 --fork --logpath ./db/data/s2/s.log --bind_ip 172.31.90.192
+
+ssh -i nn.pem ubuntu@54.226.206.250
+yes
+mongod --port 27019 --bind_ip 172.31.92.24 --dbpath ./db/config/data --configsvr --replSet cfg --logpath ./db/config/mongod.log --fork
+mongod --shardsvr --replSet s0 --dbpath ./db/data/s0 --port 27020 --fork --logpath ./db/data/s0/s.log --bind_ip 172.31.92.24
+mongod --shardsvr --replSet s1 --dbpath ./db/data/s1 --port 27021 --fork --logpath ./db/data/s1/s.log --bind_ip 172.31.92.24
+mongod --shardsvr --replSet s2 --dbpath ./db/data/s2 --port 27022 --fork --logpath ./db/data/s2/s.log --bind_ip 172.31.92.24
+
+
+Second stage, run on Node 1:
+mongos --configdb cfg/172.31.91.33:27019,172.31.90.192:27019,172.31.92.24:27019 --logpath ./db/mongos.log --fork
